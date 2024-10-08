@@ -9,7 +9,7 @@ function randomName() {
 }
 
 const { Role, DB } = require('../database/database.js');
-const { JsonWebTokenError } = require('jsonwebtoken');
+//const { JsonWebTokenError } = require('jsonwebtoken');
 async function createAdminUser() {
   let user = { password: 'toomanysecrets', roles: [{ role: Role.Admin }] };
   user.name = randomName();
