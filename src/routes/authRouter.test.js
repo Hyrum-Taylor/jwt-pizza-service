@@ -33,6 +33,7 @@ test('login', async () => {
 
   const { password, ...user } = { ...testUser, roles: [{ role: 'diner' }] };
   expect(loginRes.body.user).toMatchObject(user);
+  expect(typeof password).toBe("string");
 });
 
 test("update", async () => {
@@ -42,10 +43,10 @@ test("update", async () => {
   let ID = loginRes.body["user"]["id"];
   expect(typeof ID).toBe("number");
 
-  newEmail = randomName() + '@test.com';
-  updateduser = { userID: ID, email: newEmail, password: testUser.password };
+  let newEmail = randomName() + '@test.com';
+  let updateduser = { userID: ID, email: newEmail, password: testUser.password };
 
-  adminUser = await createAdminUser();
+  let adminUser = await createAdminUser();
   const adminRes = await request(app).put('/api/auth').send(adminUser); // need admin permissions to update user
   expect(adminRes.status).toBe(200);
 
@@ -70,7 +71,7 @@ test('logout', async () => {
 });
 
 test("menu", async () => {
-  adminUser = await createAdminUser();
+  let adminUser = await createAdminUser();
   const adminRes = await request(app).put('/api/auth').send(adminUser);
 
   const newPizzaType = { "title":"Student", "description": "No topping, no sauce, just carbs", "image":"pizza9.png", "price": 0.0001 };
@@ -86,16 +87,13 @@ test("menu", async () => {
 
 
 test("user's orders", async () => {
-  const loginRes = await request(app).put('/api/auth').send(testUser);
-  expect(loginRes.status).toBe(200);
-
-  const orderRes = await request(app).get("/api/order").set("Authorization", "Bearer "+ loginRes.body.token); // list user's orders
+  const orderRes = await request(app).get("/api/order").set("Authorization", "Bearer "+ testUserAuthToken); // list user's orders
   expect(orderRes.status).toBe(200);
   expect(orderRes.body["orders"]).toStrictEqual([]);
 
   const order = {"franchiseId": 1, "storeId":1, "items":[{ "menuId": 1, "description": "Veggie", "price": 0.05 }]};
 
-  const addItemRes = await request(app).post("/api/order").send(order).set("Authorization", "Bearer: "+loginRes.body.token); // add order
+  const addItemRes = await request(app).post("/api/order").send(order).set("Authorization", "Bearer: "+testUserAuthToken); // add order
   expect(addItemRes.status).toBe(200);
 
   expect(addItemRes.body["order"]["franchiseId"]).toBe(1);
