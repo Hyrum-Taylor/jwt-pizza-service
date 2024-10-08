@@ -9,6 +9,7 @@ function randomName() {
 }
 
 const { Role, DB } = require('../database/database.js');
+const { JsonWebTokenError } = require('jsonwebtoken');
 async function createAdminUser() {
   let user = { password: 'toomanysecrets', roles: [{ role: Role.Admin }] };
   user.name = randomName();
@@ -118,15 +119,39 @@ test("franchise", async() => {
 
   const addFranchiseRes = await request(app).post("/api/franchise").send({"name": "pizzaPocket"+userIDstring, "admins": [{"email": testUser.email}]}).set("Authorization", "Bearer: "+adminRes.body.token);
   expect(addFranchiseRes.status).toBe(200);
-  expect(addFranchiseRes.body["name"]).toBe("pizzaPocket"+userIDstring);
+  expect(addFranchiseRes.body["name"]).toBe("pizzaPocket"+userIDstring); // make sure franchise was added successfully
 
   const deleteFranchiseRes = await request(app).delete("/api/franchise/"+JSON.stringify(addFranchiseRes["id"])).set("Authorization","Bearer "+adminRes.body.token);
   expect(deleteFranchiseRes.body).toStrictEqual({"message": "franchise deleted"});
 
-  myFranchiseRes2 = await request(app).get("/api/franchise/"+userIDstring).set("Authorization", "Bearer "+testUserAuthToken); // list user franchises
+  const myFranchiseRes2 = await request(app).get("/api/franchise/"+userIDstring).set("Authorization", "Bearer "+testUserAuthToken); // list user franchises
   expect(myFranchiseRes2.status).toBe(200);
-  expect(myFranchiseRes2.body[0]["stores"].length).toBe(0); // make sure new users don't have any franchises
+  expect(myFranchiseRes2.body[0]["stores"].length).toBe(0); // make sure users don't have any franchises after deletion
 });
+
+test("store", async() => {
+  let adminUser = await createAdminUser();
+  const adminRes = await request(app).put('/api/auth').send(adminUser);
+  expect(adminRes.status).toBe(200);
+  const loginRes = await request(app).put('/api/auth').send(testUser);
+  expect(loginRes.status).toBe(200);
+
+  const userIDstring = JSON.stringify(loginRes.body["user"]["id"]);
+  const addFranchiseRes = await request(app).post("/api/franchise").send({"name": "pizzaPocket"+userIDstring, "admins": [{"email": testUser.email}]}).set("Authorization", "Bearer: "+adminRes.body.token);
+  expect(addFranchiseRes.status).toBe(200);
+
+  const franchiseID = addFranchiseRes.body["id"];
+  const franchiseIDstring = JSON.stringify(franchiseID);
+  const addStoreRes = await request(app).post("/api/franchise/"+franchiseIDstring+"/store").send({"franchiseId": franchiseID, "name":"SLC"+franchiseIDstring}).set("Authorization", "Bearer: "+loginRes.body.token);
+  console.log(addStoreRes.body);
+  expect(addStoreRes.status).toBe(200);
+  expect(addStoreRes.body["name"]).toBe("SLC"+franchiseIDstring);
+
+  const storeIDstring = JSON.stringify(addStoreRes.body["id"]);
+  const deleteStoreRes = await request(app).delete("/api/franchise/"+franchiseIDstring+"/store/"+storeIDstring).set("Authorization", "Bearer: "+loginRes.body.token);
+  expect(deleteStoreRes.status).toBe(200);
+  expect(deleteStoreRes.body).toStrictEqual({"message": "store deleted"});
+})
 
 
 /*
