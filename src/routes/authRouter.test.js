@@ -117,10 +117,15 @@ test("franchise", async() => {
   const adminRes = await request(app).put('/api/auth').send(adminUser);
 
   const addFranchiseRes = await request(app).post("/api/franchise").send({"name": "pizzaPocket"+userIDstring, "admins": [{"email": testUser.email}]}).set("Authorization", "Bearer: "+adminRes.body.token);
-  console.log(addFranchiseRes.body);
   expect(addFranchiseRes.status).toBe(200);
   expect(addFranchiseRes.body["name"]).toBe("pizzaPocket"+userIDstring);
-  
+
+  const deleteFranchiseRes = await request(app).delete("/api/franchise/"+JSON.stringify(addFranchiseRes["id"])).set("Authorization","Bearer "+adminRes.body.token);
+  expect(deleteFranchiseRes.body).toStrictEqual({"message": "franchise deleted"});
+
+  myFranchiseRes2 = await request(app).get("/api/franchise/"+userIDstring).set("Authorization", "Bearer "+testUserAuthToken); // list user franchises
+  expect(myFranchiseRes2.status).toBe(200);
+  expect(myFranchiseRes2.body[0]["stores"].length).toBe(0); // make sure new users don't have any franchises
 });
 
 
