@@ -46,6 +46,9 @@ jobs:
             },
           };" > src/config.js
 
+      - name: Tests
+        run: npm test
+
     services:
       mysql:
         image: mysql:8.0.29
