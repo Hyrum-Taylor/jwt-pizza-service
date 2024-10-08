@@ -95,20 +95,33 @@ test("user's orders", async () => {
 
   const addItemRes = await request(app).post("/api/order").send(order).set("Authorization", "Bearer: "+testUserAuthToken); // add order
   expect(addItemRes.status).toBe(200);
+  // At one point, I changed the secrets in the config.js, and it started giving me an error here: "message: 'Failed to fulfill order at factory'"
 
   expect(addItemRes.body["order"]["franchiseId"]).toBe(1);
   expect(addItemRes.body["order"]["items"][0]["description"]).toBe("Veggie");
 })
 
-// test("franchise", async() => {
-//   const franchiseListRes = await request(app).get("/api/franchise"); // list all franchises
-//   expect(franchiseListRes.status).toBe(200);
+test("franchise", async() => {
+  const franchiseListRes = await request(app).get("/api/franchise"); // list all franchises
+  expect(franchiseListRes.status).toBe(200);
 
-//   const myFranchiseRes = await request(app).get("/api/franchise").set("Authorization", "Bearer "+testUserAuthToken); // list user franchises
-//   expect(myFranchiseRes.status).toBe(200);
+  const loginRes = await request(app).put('/api/auth').send(testUser);
+  expect(loginRes.status).toBe(200);
 
+  const userIDstring = JSON.stringify(loginRes.body["user"]["id"]);
+  const myFranchiseRes = await request(app).get("/api/franchise/"+userIDstring).set("Authorization", "Bearer "+testUserAuthToken); // list user franchises
+  expect(myFranchiseRes.status).toBe(200);
+  expect(myFranchiseRes.body).toStrictEqual([]); // make sure new users don't have any franchises
+
+  let adminUser = await createAdminUser();
+  const adminRes = await request(app).put('/api/auth').send(adminUser);
+
+  const addFranchiseRes = await request(app).post("/api/franchise").send({"name": "pizzaPocket"+userIDstring, "admins": [{"email": testUser.email}]}).set("Authorization", "Bearer: "+adminRes.body.token);
+  console.log(addFranchiseRes.body);
+  expect(addFranchiseRes.status).toBe(200);
+  expect(addFranchiseRes.body["name"]).toBe("pizzaPocket"+userIDstring);
   
-// });
+});
 
 
 /*
