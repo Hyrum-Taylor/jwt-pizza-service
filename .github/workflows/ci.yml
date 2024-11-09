@@ -103,9 +103,6 @@ jobs:
     permissions:
       id-token: write
     needs: build
-    environment:
-      name: production
-      url: https://pizza.climb-5.com
     env:
       version: ${{needs.build.outputs.version}}
     steps:
