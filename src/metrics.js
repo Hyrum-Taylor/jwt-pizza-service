@@ -17,7 +17,7 @@ class Metrics {
       this.sendMetricToGrafana('request', 'post', 'total', this.postRequests);
       this.sendMetricToGrafana('request', 'get', 'total', this.getRequests);
       this.sendMetricToGrafana('request', 'put', 'total', this.putRequests);
-      
+
       this.sendMetricToGrafana('resources', 'memory', 'current', this.getMemoryUsagePercentage());
       this.sendMetricToGrafana('resources', 'cpu', 'current', this.getCpuUsagePercentage());
     }, 10000);
@@ -30,18 +30,22 @@ class Metrics {
 
   incrementDeleteRequests() {
     this.deleteRequests++;
+    this.incrementRequests();
   }
 
   incrementPostRequests() {
     this.postRequests++;
+    this.incrementRequests();
   }
 
   incrementGetRequests() {
     this.getRequests++;
+    this.incrementRequests();
   }
 
   incrementPutRequests() {
     this.putRequests++;
+    this.incrementRequests();
   }
 
   getMemoryUsagePercentage() {
