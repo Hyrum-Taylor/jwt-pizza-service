@@ -1,0 +1,82 @@
+// Use this file to for all the code necessary to interact with Grafana
+const os = require('os');
+const config = require('./config.json');
+
+class Metrics {
+  constructor() {
+    this.totalRequests = 0;
+    this.postRequests = 0;
+    this.deleteRequests = 0;
+    this.getRequests = 0;
+    this.putRequests = 0;
+
+    // This will periodically send metrics to Grafana
+    const timer = setInterval(() => {
+      this.sendMetricToGrafana('request', 'all', 'total', this.totalRequests);
+      this.sendMetricToGrafana('request', 'delete', 'total', this.deleteRequests);
+      this.sendMetricToGrafana('request', 'post', 'total', this.postRequests);
+      this.sendMetricToGrafana('request', 'get', 'total', this.getRequests);
+      this.sendMetricToGrafana('request', 'put', 'total', this.putRequests);
+      
+      this.sendMetricToGrafana('resources', 'memory', 'current', this.getMemoryUsagePercentage());
+      this.sendMetricToGrafana('resources', 'cpu', 'current', this.getCpuUsagePercentage());
+    }, 10000);
+    timer.unref();
+  }
+
+  incrementRequests() {
+    this.totalRequests++;
+  }
+
+  incrementDeleteRequests() {
+    this.deleteRequests++;
+  }
+
+  incrementPostRequests() {
+    this.postRequests++;
+  }
+
+  incrementGetRequests() {
+    this.getRequests++;
+  }
+
+  incrementPutRequests() {
+    this.putRequests++;
+  }
+
+  getMemoryUsagePercentage() {
+    const totalMemory = os.totalmem();
+    const freeMemory = os.freemem();
+    const usedMemory = totalMemory - freeMemory;
+    const memoryUsage = (usedMemory / totalMemory) * 100;
+    return memoryUsage.toFixed(2);
+  }
+
+  getCpuUsagePercentage() {
+    const cpuUsage = os.loadavg()[0] / os.cpus().length;
+    return cpuUsage.toFixed(2) * 100;
+  }
+
+  sendMetricToGrafana(metricPrefix, httpMethod, metricName, metricValue) {
+    const metric = `${metricPrefix},source=${config.source},method=${httpMethod} ${metricName}=${metricValue}`;
+
+    fetch(`${config.url}`, {
+      method: 'post',
+      body: metric,
+      headers: { Authorization: `Bearer ${config.userId}:${config.apiKey}` },
+    })
+      .then((response) => {
+        if (!response.ok) {
+          console.error('Failed to push metrics data to Grafana');
+        } else {
+          console.log(`Pushed ${metric}`);
+        }
+      })
+      .catch((error) => {
+        console.error('Error pushing metrics:', error);
+      });
+  }
+}
+
+const metrics = new Metrics();
+module.exports = metrics;
