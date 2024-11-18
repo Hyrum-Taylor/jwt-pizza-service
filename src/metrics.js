@@ -11,7 +11,7 @@ class Metrics {
     this.putRequests = 0;
 
     // This will periodically send metrics to Grafana
-    const timer = setInterval(() => {
+    setInterval(() => {
       this.sendMetricToGrafana('request', 'all', 'total', this.totalRequests);
       this.sendMetricToGrafana('request', 'delete', 'total', this.deleteRequests);
       this.sendMetricToGrafana('request', 'post', 'total', this.postRequests);
