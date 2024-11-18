@@ -1,6 +1,6 @@
 // Use this file to for all the code necessary to interact with Grafana
 const os = require('os');
-const config = require('./config.json');
+const config = require('./config.js');
 
 class Metrics {
   constructor() {
@@ -20,8 +20,7 @@ class Metrics {
 
       this.sendMetricToGrafana('resources', 'memory', 'current', this.getMemoryUsagePercentage());
       this.sendMetricToGrafana('resources', 'cpu', 'current', this.getCpuUsagePercentage());
-    }, 10000);
-    timer.unref();
+    }, 10000).unref();
   }
 
   incrementRequests() {
@@ -62,12 +61,12 @@ class Metrics {
   }
 
   sendMetricToGrafana(metricPrefix, httpMethod, metricName, metricValue) {
-    const metric = `${metricPrefix},source=${config.source},method=${httpMethod} ${metricName}=${metricValue}`;
+    const metric = `${metricPrefix},source=${config.metrics.source},method=${httpMethod} ${metricName}=${metricValue}`;
 
-    fetch(`${config.url}`, {
+    fetch(`${config.metrics.url}`, {
       method: 'post',
       body: metric,
-      headers: { Authorization: `Bearer ${config.userId}:${config.apiKey}` },
+      headers: { Authorization: `Bearer ${config.metrics.userId}:${config.metrics.apiKey}` },
     })
       .then((response) => {
         if (!response.ok) {

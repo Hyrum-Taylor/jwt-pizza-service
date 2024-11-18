@@ -1,5 +1,6 @@
 const request = require('supertest');
 const app = require('../service');
+const metrics = require('../metrics.js');
 
 const testUser = { name: 'pizza diner', email: 'reg@test.com', password: 'a' };
 let testUserAuthToken;
@@ -25,6 +26,11 @@ beforeEach(async () => {
   testUser.email = randomName() + '@test.com';
   const registerRes = await request(app).post('/api/auth').send(testUser);
   testUserAuthToken = registerRes.body.token;
+
+  //metrics.sendMetricToGrafana = jest.fn();
+  jest.mock('../metrics.js', () => ({
+    sendMetricToGrafana: jest.fn(() => null),
+  }))
 });
 
 test('login', async () => {
