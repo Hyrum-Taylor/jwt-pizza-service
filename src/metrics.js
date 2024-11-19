@@ -10,16 +10,30 @@ class Metrics {
     this.getRequests = 0;
     this.putRequests = 0;
 
+    this.activeUsers = 0;
+
     // This will periodically send metrics to Grafana
     setInterval(() => {
+      // http requests
       this.sendMetricToGrafana('request', 'all', 'total', this.totalRequests);
       this.sendMetricToGrafana('request', 'delete', 'total', this.deleteRequests);
       this.sendMetricToGrafana('request', 'post', 'total', this.postRequests);
       this.sendMetricToGrafana('request', 'get', 'total', this.getRequests);
       this.sendMetricToGrafana('request', 'put', 'total', this.putRequests);
 
+      // active users
+      this.sendMetricToGrafana('users', 'active', 'current', this.activeUsers);
+
+      // auth attempts
+
+      // system resources
       this.sendMetricToGrafana('resources', 'memory', 'current', this.getMemoryUsagePercentage());
       this.sendMetricToGrafana('resources', 'cpu', 'current', this.getCpuUsagePercentage());
+
+      // pizzas ordered
+
+      // Latency
+
     }, 10000).unref();
   }
 
@@ -45,6 +59,13 @@ class Metrics {
   incrementPutRequests() {
     this.putRequests++;
     this.incrementRequests();
+  }
+
+  incrementActiveUsers() {
+    this.activeUsers++;
+  }
+  decrememtActiveUsers() {
+    this.activeUsers--;
   }
 
   getMemoryUsagePercentage() {

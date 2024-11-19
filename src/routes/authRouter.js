@@ -87,6 +87,7 @@ authRouter.put(
     const { email, password } = req.body;
     const user = await DB.getUser(email, password);
     const auth = await setAuth(user);
+    metrics.incrementActiveUsers();
     res.json({ user: user, token: auth });
   })
 );
@@ -98,6 +99,7 @@ authRouter.delete(
   asyncHandler(async (req, res) => {
     metrics.incrementDeleteRequests();
     await clearAuth(req);
+    metrics.decrememtActiveUsers();
     res.json({ message: 'logout successful' });
   })
 );
