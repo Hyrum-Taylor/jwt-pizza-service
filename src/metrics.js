@@ -13,6 +13,7 @@ class Metrics {
     this.activeUsers = 0;
 
     // This will periodically send metrics to Grafana
+    // ${metricPrefix},source=${config.metrics.source},method=${httpMethod} ${metricName}=${metricValue}
     setInterval(() => {
       // http requests
       this.sendMetricToGrafana('request', 'all', 'total', this.totalRequests);
@@ -22,7 +23,7 @@ class Metrics {
       this.sendMetricToGrafana('request', 'put', 'total', this.putRequests);
 
       // active users
-      this.sendMetricToGrafana('users', 'active', 'current', this.activeUsers);
+      this.sendMetricToGrafana('users', 'activeusers', 'current', this.activeUsers);
 
       // auth attempts
 
