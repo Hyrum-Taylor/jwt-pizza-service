@@ -7,10 +7,6 @@ const dbModel = require('./dbModel.js');
 class DB {
   constructor() {
     this.initialized = this.initializeDatabase();
-
-    console.log("CONFIG FILE:");
-    console.log(config);
-    console.log("CONFIG OVER")
   }
 
   async getMenu() {
