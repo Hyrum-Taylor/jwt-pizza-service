@@ -61,6 +61,7 @@ class Metrics {
   }
 
   sendMetricToGrafana(metricPrefix, httpMethod, metricName, metricValue) {
+    console.log(config.metrics.source);
     const metric = `${metricPrefix},source=${config.metrics.source},method=${httpMethod} ${metricName}=${metricValue}`;
 
     fetch(`${config.metrics.url}`, {
