@@ -12,6 +12,9 @@ class Metrics {
 
     this.activeUsers = 0;
 
+    this.successfulAuth = 0;
+    this.failedAuth = 0;
+
     // This will periodically send metrics to Grafana
     // ${metricPrefix},source=${config.metrics.source},method=${httpMethod} ${metricName}=${metricValue}
     setInterval(() => {
@@ -68,6 +71,15 @@ class Metrics {
   decrememtActiveUsers() {
     this.activeUsers--;
   }
+
+  incrementSuccessfulAuths() {
+    this.successfulAuth++;
+  }
+
+  incrementFailedAuths() {
+    this.failedAuth++;
+  }
+
 
   getMemoryUsagePercentage() {
     const totalMemory = os.totalmem();
