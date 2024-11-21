@@ -32,7 +32,6 @@ class Metrics {
       this.sendMetricToGrafana('auth', 'successful', 'total', this.successfulAuth);
       this.sendMetricToGrafana('auth', 'failed', 'total', this.failedAuth);
 
-
       // system resources
       this.sendMetricToGrafana('resources', 'memory', 'current', this.getMemoryUsagePercentage());
       this.sendMetricToGrafana('resources', 'cpu', 'current', this.getCpuUsagePercentage());
