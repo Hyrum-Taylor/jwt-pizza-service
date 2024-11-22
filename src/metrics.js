@@ -41,6 +41,9 @@ class Metrics {
       this.sendMetricToGrafana('resources', 'cpu', 'current', this.getCpuUsagePercentage());
 
       // pizzas ordered
+      this.sendMetricToGrafana('purchase', 'sold', 'total', this.pizzasSold);
+      this.sendMetricToGrafana('purchase', 'failed', 'total', this.pizzaCreationFailures);
+      this.sendMetricToGrafana('purchase', 'revenue', 'total', this.totalRevenue);
 
       // Latency
 
