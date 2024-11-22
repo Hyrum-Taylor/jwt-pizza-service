@@ -92,7 +92,9 @@ orderRouter.post(
     const j = await r.json();
     if (r.ok) {
       res.send({ order, jwt: j.jwt, reportUrl: j.reportUrl });
+      metrics.incrementPizzasSold();
     } else {
+      metrics.incrementPizzaCreationFailures();
       res.status(500).send({ message: 'Failed to fulfill order at factory', reportUrl: j.reportUrl });
     }
   })

@@ -15,6 +15,10 @@ class Metrics {
     this.successfulAuth = 0;
     this.failedAuth = 0;
 
+    this.pizzasSold = 0;
+    this.pizzaCreationFailures = 0;
+    this.totalRevenue = 0;
+
     // This will periodically send metrics to Grafana
     // ${metricPrefix},source=${config.metrics.source},method=${httpMethod} ${metricName}=${metricValue}
     setInterval(() => {
@@ -82,6 +86,17 @@ class Metrics {
     this.failedAuth++;
   }
 
+  incrementPizzasSold() {
+    this.pizzasSold++;
+  }
+
+  incrementPizzaCreationFailures() {
+    this.pizzaCreationFailures++;
+  }
+
+  updateTotalRevenue(amountMoneyEarned) {
+    this.totalRevenue = this.totalRevenue + amountMoneyEarned;
+  }
 
   getMemoryUsagePercentage() {
     const totalMemory = os.totalmem();
