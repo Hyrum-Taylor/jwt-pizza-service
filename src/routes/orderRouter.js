@@ -45,7 +45,9 @@ orderRouter.endpoints = [
 orderRouter.get(
   '/menu',
   asyncHandler(async (req, res) => {
+    const start = Date.now();
     metrics.incrementGetRequests();
+    metrics.updateServiceEndpointLatency(Date.now() - start);
     res.send(await DB.getMenu());
   })
 );
@@ -55,6 +57,7 @@ orderRouter.put(
   '/menu',
   authRouter.authenticateToken,
   asyncHandler(async (req, res) => {
+    const start = Date.now();
     metrics.incrementPutRequests();
     if (!req.user.isRole(Role.Admin)) {
       throw new StatusCodeError('unable to add menu item', 403);
@@ -62,6 +65,7 @@ orderRouter.put(
 
     const addMenuItemReq = req.body;
     await DB.addMenuItem(addMenuItemReq);
+    metrics.updateServiceEndpointLatency(Date.now() - start);
     res.send(await DB.getMenu());
   })
 );
@@ -71,7 +75,9 @@ orderRouter.get(
   '/',
   authRouter.authenticateToken,
   asyncHandler(async (req, res) => {
+    const start = Date.now();
     metrics.incrementGetRequests();
+    metrics.updateServiceEndpointLatency(Date.now() - start);
     res.json(await DB.getOrders(req.user, req.query.page));
   })
 );
@@ -81,20 +87,28 @@ orderRouter.post(
   '/',
   authRouter.authenticateToken,
   asyncHandler(async (req, res) => {
+    const start = Date.now();
     metrics.incrementPostRequests();
     const orderReq = req.body;
     const order = await DB.addDinerOrder(req.user, orderReq);
+
+    const start_creation = Date.now();
     const r = await fetch(`${config.factory.url}/api/order`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', authorization: `Bearer ${config.factory.apiKey}` },
       body: JSON.stringify({ diner: { id: req.user.id, name: req.user.name, email: req.user.email }, order }),
     });
+    const latency = Date.now() - start_creation;
+    metrics.updatePizzaCreationLatency(latency); // track latency in pizza creation
+
     const j = await r.json();
     if (r.ok) {
-      res.send({ order, jwt: j.jwt, reportUrl: j.reportUrl });
       metrics.incrementPizzasSold();
+      metrics.updateServiceEndpointLatency(Date.now() - start);
+      res.send({ order, jwt: j.jwt, reportUrl: j.reportUrl });
     } else {
       metrics.incrementPizzaCreationFailures();
+      metrics.updateServiceEndpointLatency(Date.now() - start);
       res.status(500).send({ message: 'Failed to fulfill order at factory', reportUrl: j.reportUrl });
     }
   })

@@ -60,7 +60,9 @@ franchiseRouter.endpoints = [
 franchiseRouter.get(
   '/',
   asyncHandler(async (req, res) => {
+    const start = Date.now();
     metrics.incrementGetRequests();
+    metrics.updateServiceEndpointLatency(Date.now() - start);
     res.json(await DB.getFranchises(req.user));
   })
 );
@@ -70,6 +72,7 @@ franchiseRouter.get(
   '/:userId',
   authRouter.authenticateToken,
   asyncHandler(async (req, res) => {
+    const start = Date.now();
     metrics.incrementGetRequests();
     let result = [];
     const userId = Number(req.params.userId);
@@ -77,6 +80,7 @@ franchiseRouter.get(
       result = await DB.getUserFranchises(userId);
     }
 
+    metrics.updateServiceEndpointLatency(Date.now() - start);
     res.json(result);
   })
 );
@@ -86,12 +90,14 @@ franchiseRouter.post(
   '/',
   authRouter.authenticateToken,
   asyncHandler(async (req, res) => {
+    const start = Date.now();
     metrics.incrementPostRequests();
     if (!req.user.isRole(Role.Admin)) {
       throw new StatusCodeError('unable to create a franchise', 403);
     }
 
     const franchise = req.body;
+    metrics.updateServiceEndpointLatency(Date.now() - start);
     res.send(await DB.createFranchise(franchise));
   })
 );
@@ -100,6 +106,7 @@ franchiseRouter.post(
 franchiseRouter.delete(
   '/:franchiseId',
   asyncHandler(async (req, res) => {
+    const start = Date.now();
     metrics.incrementDeleteRequests();
     if (!req.user.isRole(Role.Admin)) {
       throw new StatusCodeError('unable to delete a franchise', 403);
@@ -107,6 +114,7 @@ franchiseRouter.delete(
 
     const franchiseId = Number(req.params.franchiseId);
     await DB.deleteFranchise(franchiseId);
+    metrics.updateServiceEndpointLatency(Date.now() - start);
     res.json({ message: 'franchise deleted' });
   })
 );
@@ -116,6 +124,7 @@ franchiseRouter.post(
   '/:franchiseId/store',
   authRouter.authenticateToken,
   asyncHandler(async (req, res) => {
+    const start = Date.now();
     metrics.incrementPostRequests();
     const franchiseId = Number(req.params.franchiseId);
     const franchise = await DB.getFranchise({ id: franchiseId });
@@ -123,6 +132,7 @@ franchiseRouter.post(
       throw new StatusCodeError('unable to create a store', 403);
     }
 
+    metrics.updateServiceEndpointLatency(Date.now() - start);
     res.send(await DB.createStore(franchise.id, req.body));
   })
 );
@@ -132,6 +142,7 @@ franchiseRouter.delete(
   '/:franchiseId/store/:storeId',
   authRouter.authenticateToken,
   asyncHandler(async (req, res) => {
+    const start = Date.now();
     metrics.incrementDeleteRequests();
     const franchiseId = Number(req.params.franchiseId);
     const franchise = await DB.getFranchise({ id: franchiseId });
@@ -141,6 +152,7 @@ franchiseRouter.delete(
 
     const storeId = Number(req.params.storeId);
     await DB.deleteStore(franchiseId, storeId);
+    metrics.updateServiceEndpointLatency(Date.now() - start);
     res.json({ message: 'store deleted' });
   })
 );

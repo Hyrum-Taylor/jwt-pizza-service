@@ -68,6 +68,7 @@ authRouter.authenticateToken = (req, res, next) => {
 authRouter.post(
   '/',
   asyncHandler(async (req, res) => {
+    const start = Date.now();
     metrics.incrementPostRequests();
     const { name, email, password } = req.body;
     if (!name || !email || !password) {
@@ -76,6 +77,7 @@ authRouter.post(
     const user = await DB.addUser({ name, email, password, roles: [{ role: Role.Diner }] });
     const auth = await setAuth(user);
     metrics.incrementActiveUsers();
+    metrics.updateServiceEndpointLatency(Date.now() - start);
     res.json({ user: user, token: auth });
   })
 );
@@ -84,11 +86,13 @@ authRouter.post(
 authRouter.put(
   '/',
   asyncHandler(async (req, res) => {
+    const start = Date.now();
     metrics.incrementPutRequests();
     const { email, password } = req.body;
     const user = await DB.getUser(email, password);
     const auth = await setAuth(user);
     metrics.incrementActiveUsers();
+    metrics.updateServiceEndpointLatency(Date.now() - start);
     res.json({ user: user, token: auth });
   })
 );
@@ -98,9 +102,11 @@ authRouter.delete(
   '/',
   authRouter.authenticateToken,
   asyncHandler(async (req, res) => {
+    const start = Date.now();
     metrics.incrementDeleteRequests();
     await clearAuth(req);
     metrics.decrememtActiveUsers();
+    metrics.updateServiceEndpointLatency(Date.now() - start);
     res.json({ message: 'logout successful' });
   })
 );
@@ -110,6 +116,7 @@ authRouter.put(
   '/:userId',
   authRouter.authenticateToken,
   asyncHandler(async (req, res) => {
+    const start = Date.now();
     metrics.incrementPutRequests();
     const { email, password } = req.body;
     const userId = Number(req.params.userId);
@@ -119,6 +126,7 @@ authRouter.put(
     }
 
     const updatedUser = await DB.updateUser(userId, email, password);
+    metrics.updateServiceEndpointLatency(Date.now() - start);
     res.json(updatedUser);
   })
 );

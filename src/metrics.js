@@ -19,6 +19,9 @@ class Metrics {
     this.pizzaCreationFailures = 0;
     this.totalRevenue = 0;
 
+    this.pizzaCreationLatencyArr = [];
+    this.serviceEndpointLatencyArr = [];
+
     // This will periodically send metrics to Grafana
     // ${metricPrefix},source=${config.metrics.source},method=${httpMethod} ${metricName}=${metricValue}
     setInterval(() => {
@@ -46,6 +49,10 @@ class Metrics {
       this.sendMetricToGrafana('purchase', 'revenue', 'total', this.totalRevenue);
 
       // Latency
+      this.sendMetricToGrafana("latency", "pizzaCreation", 'current', this.average(this.pizzaCreationLatencyArr));
+      this.pizzaCreationLatencyArr = []; // reset array after sending metrics
+      this.sendMetricToGrafana("latency", "serviceEndpoint", 'current', this.average(this.serviceEndpointLatencyArr));
+      this.serviceEndpointLatencyArr = []; // reset array after sending metrics
 
     }, 10000).unref();
   }
@@ -99,6 +106,21 @@ class Metrics {
 
   updateTotalRevenue(amountMoneyEarned) {
     this.totalRevenue = this.totalRevenue + amountMoneyEarned;
+  }
+
+  updatePizzaCreationLatency(newLatency) {
+    this.pizzaCreationLatencyArr.push(newLatency);
+  }
+
+  updateServiceEndpointLatency(newLatency) {
+    this.serviceEndpointLatencyArr.push(newLatency);
+  }
+
+  average(array) {
+    if (array.length == 0) {
+      return null;
+    }
+    return array.reduce((a, b) => a + b) / array.length;
   }
 
   getMemoryUsagePercentage() {
