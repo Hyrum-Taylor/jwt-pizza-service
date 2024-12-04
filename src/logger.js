@@ -2,6 +2,7 @@ const config = require('./config.js');
 
 class Logger {
   httpLogger = (req, res, next) => {
+    console.log("Triggered httpLogger");
     let send = res.send;
     res.send = (resBody) => {
       const logData = {
