@@ -40,7 +40,7 @@ authRouter.endpoints = [
   },
   {
     method: 'PUT',
-    path: '/chaos/:state',
+    path: '/api/auth/chaos/:state',
     requiresAuth: true,
     description: 'Enable Chaos',
     example: `curl -X PUT $host/chaos/true -H "Authorization: Bearer $token"`,
