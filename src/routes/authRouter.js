@@ -38,6 +38,14 @@ authRouter.endpoints = [
     example: `curl -X DELETE localhost:3000/api/auth -H 'Authorization: Bearer tttttt'`,
     response: { message: 'logout successful' },
   },
+  {
+    method: 'PUT',
+    path: '/chaos/:state',
+    requiresAuth: true,
+    description: 'Enable Chaos',
+    example: `curl -X PUT $host/chaos/true -H "Authorization: Bearer $token"`,
+    response: { message: 'chaos enabled' },
+  },
 ];
 
 async function setAuthUser(req, res, next) {
