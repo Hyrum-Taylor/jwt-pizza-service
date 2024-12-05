@@ -4,6 +4,7 @@ const config = require('../config.js');
 const metrics = require('../metrics.js');
 const { asyncHandler } = require('../endpointHelper.js');
 const { DB, Role } = require('../database/database.js');
+const { StatusCodeError, asyncHandler } = require('../endpointHelper.js');
 
 const authRouter = express.Router();
 
@@ -144,14 +145,26 @@ authRouter.put(
   '/chaos/:state',
   authRouter.authenticateToken,
   asyncHandler(async (req, res) => {
-    if (user.id !== userId && !user.isRole(Role.Admin)) {
-      return res.status(404).json({ message: 'unknown endpoint.' });
-    }    
+    if (!req.user.isRole(Role.Admin)) {
+      throw new StatusCodeError('unknown endpoint', 404);
+    }
 
     const enableChaos = req.params.state === 'true';
     res.json({ chaos: enableChaos });
   })
 );
+// authRouter.put(
+//   '/chaos/:state',
+//   authRouter.authenticateToken,
+//   asyncHandler(async (req, res) => {
+//     if (req.user.id !== userId && !user.isRole(Role.Admin)) {
+//       return res.status(404).json({ message: 'unknown endpoint.' });
+//     }    
+
+//     const enableChaos = req.params.state === 'true';
+//     res.json({ chaos: enableChaos });
+//   })
+// );
 
 async function setAuth(user) {
   const token = jwt.sign(user, config.jwtSecret);
