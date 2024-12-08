@@ -199,3 +199,8 @@ jobs:
             ${{ github.event.head_commit.message }}
 
             **commit**: ${{ github.sha }}
+
+      - name: Run Dastardly Action Step
+        uses: PortSwigger/dastardly-github-action@main
+        with:
+          target-url: 'https://pizza.cs329.click'
