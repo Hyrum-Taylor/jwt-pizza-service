@@ -136,7 +136,7 @@ authRouter.put(
       return res.status(403).json({ message: 'unauthorized' });
     }
 
-    await verifyEmail(email);
+    await verifyEmailRegex(email);
 
     const updatedUser = await DB.updateUser(userId, email, password);
     metrics.updateServiceEndpointLatency(Date.now() - start);
@@ -192,13 +192,16 @@ function readAuthToken(req) {
 }
 
 async function verifyEmail(email) {
+  await verifyEmailRegex(email);
+  if (await DB.emailExists(email)) {
+    throw new StatusCodeError('That account already exists', 409);
+  }
+}
+
+async function verifyEmailRegex(email) {
   const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailPattern.test(email)) {
     throw new StatusCodeError('Invalid Email Formatting', 422);
-    
-  }
-  if (await DB.emailExists(email)) {
-    throw new StatusCodeError('That account already exists', 409);
   }
 }
 
