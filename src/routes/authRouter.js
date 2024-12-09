@@ -187,10 +187,13 @@ function readAuthToken(req) {
   return null;
 }
 
-function verifyEmail(email) {
+async function verifyEmail(email) {
   const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailPattern.test(email)) {
     throw new StatusCodeError('Invalid Email Formatting', 422);
+  }
+  if (await DB.emailExists(email)) {
+    throw new StatusCodeError('That account already exists', 409);
   }
 }
 

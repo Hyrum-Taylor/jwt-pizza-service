@@ -314,6 +314,23 @@ class DB {
     throw new Error('No ID found');
   }
 
+  async emailExists(email) {
+    const connection = await this.getConnection();
+    let len;
+    try {
+      const [rows] = await connection.execute(`SELECT * FROM user WHERE email=?`, [email]);
+      len = rows.length;
+    } finally {
+    connection.end();
+    }
+    if (len > 0) {
+      connection.end();
+      return true;
+    }
+    connection.end();
+    return false;
+  }
+
   async getConnection() {
     // Make sure the database is initialized before trying to get a connection.
     await this.initialized;

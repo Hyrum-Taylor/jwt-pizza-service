@@ -4,9 +4,10 @@ const app = require('../service');
 
 const testUser = { name: 'pizza diner', email: 'reg@test.com', password: 'a' };
 let testUserAuthToken;
+const time = Date.now().toString();
 
 function randomName() {
-  return Math.random().toString(36).substring(2, 12);
+  return Math.random().toString(36).substring(2, 12) + time;
 }
 
 const { Role, DB } = require('../database/database.js');
