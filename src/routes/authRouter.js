@@ -79,6 +79,7 @@ authRouter.post(
     const start = Date.now();
     metrics.incrementPostRequests();
     const { name, email, password } = req.body;
+    verifyEmail(email);
     if (!name || !email || !password) {
       return res.status(400).json({ message: 'name, email, and password are required' });
     }
@@ -145,7 +146,7 @@ authRouter.put(
   authRouter.authenticateToken,
   asyncHandler(async (req, res) => {
     if (!req.user.isRole(Role.Admin)) {
-      throw new StatusCodeError('unknown endpoint.', 404);
+      throw new StatusCodeError('unknown endpoint', 404);
     }
 
     const enableChaos = req.params.state === 'true';
@@ -184,6 +185,13 @@ function readAuthToken(req) {
     return authHeader.split(' ')[1];
   }
   return null;
+}
+
+function verifyEmail(email) {
+  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailPattern.test(email)) {
+    throw new StatusCodeError('Invalid Email Formatting', 422);
+  }
 }
 
 module.exports = { authRouter, setAuthUser };
