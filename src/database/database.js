@@ -154,8 +154,9 @@ class DB {
       const orderId = orderResult.insertId;
       for (const item of order.items) {
         const menuId = await this.getID(connection, 'id', item.menuId, 'menu');
-        await this.query(connection, `INSERT INTO orderItem (orderId, menuId, description, price) VALUES (?, ?, ?, ?)`, [orderId, menuId, item.description, item.price]);
-        metrics.updateTotalRevenue(item.price);
+        const price = await this.getPrice(connection, item.menuId);
+        await this.query(connection, `INSERT INTO orderItem (orderId, menuId, description, price) VALUES (?, ?, ?, ?)`, [orderId, menuId, item.description, price]);
+        metrics.updateTotalRevenue(price);
       }
       return { ...order, id: orderId };
     } finally {
@@ -299,6 +300,15 @@ class DB {
     const [rows] = await connection.execute(`SELECT id FROM ${table} WHERE ${key}=?`, [value]);
     if (rows.length > 0) {
       return rows[0].id;
+    }
+    throw new Error('No ID found');
+  }
+  //example: this.getID(connection, 'id', item.menuId, 'menu');
+
+  async getPrice(connection, value) {
+    const [rows] = await connection.execute(`SELECT price FROM menu WHERE id=?`, [value]);
+    if (rows.length > 0) {
+      return rows[0].price;
     }
     throw new Error('No ID found');
   }
