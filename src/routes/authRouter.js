@@ -80,15 +80,7 @@ authRouter.post(
     metrics.incrementPostRequests();
     const { name, email, password } = req.body;
     
-    // verify Email
-
-    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailPattern.test(email)) {
-      throw new StatusCodeError('Invalid Email Formatting', 422); 
-    }
-    if (await DB.emailExists(email)) {
-      throw new StatusCodeError('That account already exists', 409);
-    }
+    await verifyEmail(email);
 
     if (!name || !email || !password) {
       return res.status(400).json({ message: 'name, email, and password are required' });
@@ -144,6 +136,8 @@ authRouter.put(
       return res.status(403).json({ message: 'unauthorized' });
     }
 
+    await verifyEmail(email);
+
     const updatedUser = await DB.updateUser(userId, email, password);
     metrics.updateServiceEndpointLatency(Date.now() - start);
     res.json(updatedUser);
@@ -197,15 +191,15 @@ function readAuthToken(req) {
   return null;
 }
 
-// async function verifyEmail(email) {
-//   const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-//   if (!emailPattern.test(email)) {
-//     throw new StatusCodeError('Invalid Email Formatting', 422);
+async function verifyEmail(email) {
+  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailPattern.test(email)) {
+    throw new StatusCodeError('Invalid Email Formatting', 422);
     
-//   }
-//   if (await DB.emailExists(email)) {
-//     throw new StatusCodeError('That account already exists', 409);
-//   }
-// }
+  }
+  if (await DB.emailExists(email)) {
+    throw new StatusCodeError('That account already exists', 409);
+  }
+}
 
 module.exports = { authRouter, setAuthUser };
