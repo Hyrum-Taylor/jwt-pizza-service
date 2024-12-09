@@ -321,14 +321,9 @@ class DB {
       const [rows] = await connection.execute(`SELECT * FROM user WHERE email=?`, [email]);
       len = rows.length;
     } finally {
-    connection.end();
-    }
-    if (len > 0) {
       connection.end();
-      return true;
     }
-    connection.end();
-    return false;
+    return (len>0); // returns true if the email already exists
   }
 
   async getConnection() {
